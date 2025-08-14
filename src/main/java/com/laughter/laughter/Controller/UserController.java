@@ -24,8 +24,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/laughter/user")
-@CrossOrigin(origins = "", maxAge = 3600)
+@RequestMapping("laughter/user")
+@CrossOrigin(origins = "http://172.16.17.113:5500/", maxAge = 3600)
 @RequiredArgsConstructor
 public class UserController {
 
