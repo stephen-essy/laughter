@@ -3,15 +3,17 @@ package com.laughter.laughter.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.laughter.laughter.DTO.UserDTO;
 
 @Service
+
 public class EmailServices {
     @Autowired
     private JavaMailSender mailSender;
-
+    @Async
     public void sendAccountCreationVerification(String to, UserDTO userDTO, String recoverString) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
