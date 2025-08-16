@@ -13,9 +13,10 @@ public class UserDTO {
     private String name;
     private String email;
     private String password;
+    private String recoveryString;
 
     public UserDTO(String email, String password) {
         this.email = email;
         this.password = password;
-    }
+    } 
 }
