@@ -2,6 +2,8 @@ package com.laughter.laughter.Controller;
 
 import java.util.Optional;
 
+import javax.crypto.SecretKey;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,15 +19,22 @@ import com.laughter.laughter.Entity.User;
 import com.laughter.laughter.Repository.UserRepository;
 import com.laughter.laughter.Responses.ApiResponse;
 import com.laughter.laughter.Responses.AuthResponse;
+import com.laughter.laughter.Security.AESEncryption;
 import com.laughter.laughter.Security.RecoveryStringGenerator;
 import com.laughter.laughter.Service.EmailServices;
 
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.factory.annotation.Value;
+
 
 @RestController
 @RequestMapping("laughter/user")
-@CrossOrigin(origins = "http://172.16.130.229:5500/", maxAge = 3600)
+@CrossOrigin(origins = "http://172.16.130.252:5500/", maxAge = 3600)
+@Getter
+@Setter
 @RequiredArgsConstructor
 public class UserController {
 
@@ -34,6 +43,9 @@ public class UserController {
     private UserRepository userRepository;
     @Autowired
     private EmailServices emailServices;
+    @Value("${app.secret.key}")
+    private  String secretString;
+
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> register(@Valid @RequestBody UserDTO userDTO) {
@@ -43,9 +55,11 @@ public class UserController {
             }
             String name = userDTO.getName();
             String email = userDTO.getEmail();
-            String password = new BCryptPasswordEncoder().encode(userDTO.getPassword());
+            SecretKey secretKey=AESEncryption.getSecretKey(secretString);
+            String password=AESEncryption.encrypt(userDTO.getPassword(), secretKey);
             String recoverString=RecoveryStringGenerator.generateRecoveryString(name, email, password);
-            User user = new User(name, email, password);
+            String securedRecoveryString =new BCryptPasswordEncoder().encode(recoverString);
+            User user = new User(name, email, password,securedRecoveryString);
             userRepository.save(user);
             try {
                 emailServices.sendAccountCreationVerification(email, userDTO,recoverString);
@@ -57,6 +71,32 @@ public class UserController {
         } catch (Exception e) {
             System.err.print("Error: " + e.getMessage());
             return ResponseEntity.badRequest().body(new ApiResponse(false, "Error in processing", null));
+        }
+    }
+
+    @PostMapping("/recover")
+    public ResponseEntity<AuthResponse> recoverPassword(@Valid @RequestBody UserDTO userDTO){
+        try {
+            Optional<User> userFound=userRepository.findByEmail(userDTO.getEmail());
+            if(userFound.isEmpty()){
+                return ResponseEntity.badRequest().body(new AuthResponse(false,"Email does not exist"));
+            }
+            User user=userFound.get();
+            if(!passwordEncoder.matches(userDTO.getRecoveryString(),user.getRecoveryString())){
+                return ResponseEntity.badRequest().body(new AuthResponse(false,"Incorrect Code entered"));
+            }
+            String recoverPassword=AESEncryption.decrypt(user.getPassword(),AESEncryption.getSecretKey(secretString));
+            try{
+                emailServices.sendRecoveryPassword(userDTO.getEmail(),user,recoverPassword);
+                System.out.println("Email sent to lazy recipient :"+user.getEmail());
+            }catch(Exception e){
+                System.out.println("Error :"+e.getMessage());
+                return ResponseEntity.badRequest().body(new AuthResponse(false,"Error in Sending your password !"));
+            }
+            return ResponseEntity.ok(new AuthResponse(false,"Password is sent to your email !"));
+        } catch (Exception e) {
+             System.out.println("ERROR :"+e.getMessage());
+            return ResponseEntity.badRequest().body(new AuthResponse(false,"Error in processing your request !"));
         }
     }
 
