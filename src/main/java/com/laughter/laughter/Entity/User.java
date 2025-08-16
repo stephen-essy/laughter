@@ -27,6 +27,9 @@ public class User {
     private String email;
     @Column(name="password",nullable=false)
     private String password;
+    @Column(name="recovery_string")
+    private String recoveryString;
+    
     public User(String name, String email, String password) {
         this.name = name;
         this.email = email;

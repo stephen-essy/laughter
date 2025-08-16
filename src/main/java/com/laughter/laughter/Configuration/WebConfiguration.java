@@ -11,9 +11,10 @@ public class WebConfiguration  implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry){
         registry.addMapping("laughter/**")
-        .allowedOrigins("http://172.16.17.113:5500/")
+        .allowedOrigins("http://172.16.130.229:5500/")
         .allowedHeaders("Content-Type","Authorization")
         .allowedMethods("GET","PUT","DELETE","OPTIONS")
         .allowCredentials(true);
     }  
 }
+

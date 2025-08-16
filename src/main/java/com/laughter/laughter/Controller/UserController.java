@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("laughter/user")
-@CrossOrigin(origins = "http://172.16.17.113:5500/", maxAge = 3600)
+@CrossOrigin(origins = "http://172.16.130.229:5500/", maxAge = 3600)
 @RequiredArgsConstructor
 public class UserController {
 
@@ -49,11 +49,11 @@ public class UserController {
             userRepository.save(user);
             try {
                 emailServices.sendAccountCreationVerification(email, userDTO,recoverString);
-                System.out.print("Email sent to Recipient :" + email);
+                System.out.println("Email sent to Recipient :" + email);
             } catch (Exception e) {
                 System.out.println("Failed to send Email to :" + email + " Accompaning problems are " + e.getMessage());
             }
-            return ResponseEntity.ok(new ApiResponse(true, "Successfully", null));
+            return ResponseEntity.ok(new ApiResponse(true, "account is created Successful,Check your email", null));
         } catch (Exception e) {
             System.err.print("Error: " + e.getMessage());
             return ResponseEntity.badRequest().body(new ApiResponse(false, "Error in processing", null));
@@ -87,5 +87,4 @@ public class UserController {
             return ResponseEntity.badRequest().body(new AuthResponse(false, "Error in processing"));
         }
     }
-
 }
