@@ -29,11 +29,13 @@ public class User {
     private String password;
     @Column(name="recovery_string")
     private String recoveryString;
-    
-    public User(String name, String email, String password) {
+
+    public User(String name, String email, String password,String recoveryString) {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.recoveryString=recoveryString;
     }
+
 
 }
