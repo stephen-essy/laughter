@@ -32,7 +32,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 @RestController
 @RequestMapping("laughter/user")
-@CrossOrigin(origins = "http://172.16.130.252:5500/", maxAge = 3600)
+@CrossOrigin(origins = "http://172.16.17.113:5500/", maxAge = 3600)
 @Getter
 @Setter
 @RequiredArgsConstructor
