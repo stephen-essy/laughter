@@ -47,7 +47,7 @@ public class UserController {
     private UserRepository userRepository;
     @Autowired
     private EmailServices emailServices;
-    @Value("${app.secret.key}")
+    @Value("${app.secret.value}")
     private String secretString;
     @Autowired
     private JwtUtil jwtUtils;
@@ -111,16 +111,17 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody UserDTO userDTO) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody UserDTO userDTO) throws Exception {
         try {
             Optional<User> userFound = userRepository.findByEmail(userDTO.getEmail());
 
             if (userFound.isEmpty()) {
                 return ResponseEntity.badRequest().body(new AuthResponse(false, "Incorrect Email"));
             }
+            System.out.println("String to be used for encription is :"+secretString);
             User user = userFound.get();
-            if (passwordEncoder.matches(userDTO.getPassword(), user.getPassword())) {
-
+            String rawPassword=AESEncryption.decrypt(user.getPassword(),AESEncryption.getSecretKey(secretString));
+            if (rawPassword.equals(userDTO.getPassword())){
                 // Jwt implementation to provide token and send to fontend
                 UserDetails userDetails = userDetailsImplementation.loadUserByUsername(userDTO.getEmail());
                 String token = jwtUtils.generateToken(userDetails);
@@ -128,7 +129,7 @@ public class UserController {
                         true,
                         "Successful Authenticated !",
                         token,
-                        user.getUsername()));
+                        user.getName()));
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                         new AuthResponse(

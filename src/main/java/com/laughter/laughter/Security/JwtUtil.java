@@ -4,13 +4,15 @@ import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
+@Component
 public class JwtUtil {
 
-    @Value("${app.secret.key}")
+    @Value("${jwt.secret}")
     private String secretString;
 
     private final long expirationMs=36000;
@@ -20,7 +22,7 @@ public class JwtUtil {
         .setSubject(userDetails.getUsername())
         .setIssuedAt(new Date())
         .setExpiration(new Date(System.currentTimeMillis()+expirationMs))
-        .signWith(SignatureAlgorithm.HS512,secretString)
+        .signWith(SignatureAlgorithm.HS256,secretString)
         .compact();
     }
 
