@@ -5,8 +5,11 @@ import java.util.Optional;
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,14 +23,15 @@ import com.laughter.laughter.Repository.UserRepository;
 import com.laughter.laughter.Responses.ApiResponse;
 import com.laughter.laughter.Responses.AuthResponse;
 import com.laughter.laughter.Security.AESEncryption;
+import com.laughter.laughter.Security.JwtUtil;
 import com.laughter.laughter.Security.RecoveryStringGenerator;
 import com.laughter.laughter.Service.EmailServices;
+import com.laughter.laughter.Service.UserDetailsServiceImplementation;
 
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Value;
 
 
 @RestController
@@ -45,6 +49,13 @@ public class UserController {
     private EmailServices emailServices;
     @Value("${app.secret.key}")
     private  String secretString;
+    @Autowired
+    private JwtUtil jwtUtils;
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired 
+    private UserDetailsServiceImplementation userDetailsImplementation;
+    
 
 
     @PostMapping("/register")
@@ -111,7 +122,9 @@ public class UserController {
             User user = userFound.get();
             if (passwordEncoder.matches(userDTO.getPassword(), user.getPassword())) {
 
-                // Jwt implementation to provide token and send to backend
+                // Jwt implementation to provide token and send to fontend 
+                UserDetails userDetails=userDetailsImplementation.loadUserByUsername(userDTO.getEmail());
+                String token =jwtUtils.generateToken(userDetails);
                 return ResponseEntity.ok(new AuthResponse(
                         true,
                         "Successful Authenticated !"));
