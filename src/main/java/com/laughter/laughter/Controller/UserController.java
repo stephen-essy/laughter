@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,7 +34,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-
 @RestController
 @RequestMapping("laughter/user")
 @CrossOrigin(origins = "http://172.16.17.113:5500/", maxAge = 3600)
@@ -48,15 +48,13 @@ public class UserController {
     @Autowired
     private EmailServices emailServices;
     @Value("${app.secret.key}")
-    private  String secretString;
+    private String secretString;
     @Autowired
     private JwtUtil jwtUtils;
     @Autowired
     private AuthenticationManager authenticationManager;
-    @Autowired 
+    @Autowired
     private UserDetailsServiceImplementation userDetailsImplementation;
-    
-
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> register(@Valid @RequestBody UserDTO userDTO) {
@@ -66,14 +64,14 @@ public class UserController {
             }
             String name = userDTO.getName();
             String email = userDTO.getEmail();
-            SecretKey secretKey=AESEncryption.getSecretKey(secretString);
-            String password=AESEncryption.encrypt(userDTO.getPassword(), secretKey);
-            String recoverString=RecoveryStringGenerator.generateRecoveryString(name, email, password);
-            String securedRecoveryString =new BCryptPasswordEncoder().encode(recoverString);
-            User user = new User(name, email, password,securedRecoveryString);
+            SecretKey secretKey = AESEncryption.getSecretKey(secretString);
+            String password = AESEncryption.encrypt(userDTO.getPassword(), secretKey);
+            String recoverString = RecoveryStringGenerator.generateRecoveryString(name, email, password);
+            String securedRecoveryString = new BCryptPasswordEncoder().encode(recoverString);
+            User user = new User(name, email, password, securedRecoveryString);
             userRepository.save(user);
             try {
-                emailServices.sendAccountCreationVerification(email, userDTO,recoverString);
+                emailServices.sendAccountCreationVerification(email, userDTO, recoverString);
                 System.out.println("Email sent to Recipient :" + email);
             } catch (Exception e) {
                 System.out.println("Failed to send Email to :" + email + " Accompaning problems are " + e.getMessage());
@@ -86,28 +84,29 @@ public class UserController {
     }
 
     @PostMapping("/recover")
-    public ResponseEntity<AuthResponse> recoverPassword(@Valid @RequestBody UserDTO userDTO){
+    public ResponseEntity<AuthResponse> recoverPassword(@Valid @RequestBody UserDTO userDTO) {
         try {
-            Optional<User> userFound=userRepository.findByEmail(userDTO.getEmail());
-            if(userFound.isEmpty()){
-                return ResponseEntity.badRequest().body(new AuthResponse(false,"Email does not exist"));
+            Optional<User> userFound = userRepository.findByEmail(userDTO.getEmail());
+            if (userFound.isEmpty()) {
+                return ResponseEntity.badRequest().body(new AuthResponse(false, "Email does not exist"));
             }
-            User user=userFound.get();
-            if(!passwordEncoder.matches(userDTO.getRecoveryString(),user.getRecoveryString())){
-                return ResponseEntity.badRequest().body(new AuthResponse(false,"Incorrect Code entered"));
+            User user = userFound.get();
+            if (!passwordEncoder.matches(userDTO.getRecoveryString(), user.getRecoveryString())) {
+                return ResponseEntity.badRequest().body(new AuthResponse(false, "Incorrect Code entered"));
             }
-            String recoverPassword=AESEncryption.decrypt(user.getPassword(),AESEncryption.getSecretKey(secretString));
-            try{
-                emailServices.sendRecoveryPassword(userDTO.getEmail(),user,recoverPassword);
-                System.out.println("Email sent to lazy recipient :"+user.getEmail());
-            }catch(Exception e){
-                System.out.println("Error :"+e.getMessage());
-                return ResponseEntity.badRequest().body(new AuthResponse(false,"Error in Sending your password !"));
+            String recoverPassword = AESEncryption.decrypt(user.getPassword(),
+                    AESEncryption.getSecretKey(secretString));
+            try {
+                emailServices.sendRecoveryPassword(userDTO.getEmail(), user, recoverPassword);
+                System.out.println("Email sent to lazy recipient :" + user.getEmail());
+            } catch (Exception e) {
+                System.out.println("Error :" + e.getMessage());
+                return ResponseEntity.badRequest().body(new AuthResponse(false, "Error in Sending your password !"));
             }
-            return ResponseEntity.ok(new AuthResponse(false,"Password is sent to your email !"));
+            return ResponseEntity.ok(new AuthResponse(false, "Password is sent to your email !"));
         } catch (Exception e) {
-             System.out.println("ERROR :"+e.getMessage());
-            return ResponseEntity.badRequest().body(new AuthResponse(false,"Error in processing your request !"));
+            System.out.println("ERROR :" + e.getMessage());
+            return ResponseEntity.badRequest().body(new AuthResponse(false, "Error in processing your request !"));
         }
     }
 
@@ -122,12 +121,14 @@ public class UserController {
             User user = userFound.get();
             if (passwordEncoder.matches(userDTO.getPassword(), user.getPassword())) {
 
-                // Jwt implementation to provide token and send to fontend 
-                UserDetails userDetails=userDetailsImplementation.loadUserByUsername(userDTO.getEmail());
-                String token =jwtUtils.generateToken(userDetails);
+                // Jwt implementation to provide token and send to fontend
+                UserDetails userDetails = userDetailsImplementation.loadUserByUsername(userDTO.getEmail());
+                String token = jwtUtils.generateToken(userDetails);
                 return ResponseEntity.ok(new AuthResponse(
                         true,
-                        "Successful Authenticated !"));
+                        "Successful Authenticated !",
+                        token,
+                        user.getUsername()));
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                         new AuthResponse(
@@ -135,7 +136,7 @@ public class UserController {
                                 "Incorrect Password Entered !"));
             }
 
-        } catch (Exception e) {
+        } catch (UsernameNotFoundException e) {
             System.err.println("Error :" + e.getMessage());
             return ResponseEntity.badRequest().body(new AuthResponse(false, "Error in processing"));
         }
