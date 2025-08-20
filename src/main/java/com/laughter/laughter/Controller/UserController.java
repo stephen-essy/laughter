@@ -118,7 +118,6 @@ public class UserController {
             if (userFound.isEmpty()) {
                 return ResponseEntity.badRequest().body(new AuthResponse(false, "Incorrect Email"));
             }
-            System.out.println("String to be used for encription is :"+secretString);
             User user = userFound.get();
             String rawPassword=AESEncryption.decrypt(user.getPassword(),AESEncryption.getSecretKey(secretString));
             if (rawPassword.equals(userDTO.getPassword())){
