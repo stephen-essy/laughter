@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -42,7 +44,7 @@ import lombok.Setter;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final BCryptPasswordEncoder passwordEncoder;
+    private BCryptPasswordEncoder passwordEncoder;
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -140,5 +142,12 @@ public class UserController {
             System.err.println("Error :" + e.getMessage());
             return ResponseEntity.badRequest().body(new AuthResponse(false, "Error in processing"));
         }
+    }
+
+
+    @MessageMapping("/greet")
+    @SendTo("/topic/greetings")
+    public String  greet(String name){
+        return "Hello,"+ name +" !";
     }
 }

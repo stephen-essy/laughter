@@ -5,14 +5,14 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.4</version>
+		<version>3.5.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.laughter</groupId>
 	<artifactId>laughter</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>laughter</name>
-	<description>It's now laughter , but tears and Goosebumps are on the way</description>
+	<description>It's now laughter ,but tears and Goosebumps are on the way</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -100,6 +100,12 @@
 			<artifactId>jjwt-jackson</artifactId>
 			<version>0.11.5</version>
 			<scope>runtime</scope>
+		</dependency>
+
+		<!--WebSocketing implementation-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
 	</dependencies>
 
