@@ -38,13 +38,13 @@ import lombok.Setter;
 
 @RestController
 @RequestMapping("laughter/user")
-@CrossOrigin(origins = "http://172.16.17.113:5500/", maxAge = 3600)
+@CrossOrigin(origins = "http://127.0.0.1:5500/", maxAge = 3600)
 @Getter
 @Setter
 @RequiredArgsConstructor
 public class UserController {
-
-    private BCryptPasswordEncoder passwordEncoder;
+    
+    private final BCryptPasswordEncoder passwordEncoder;
     @Autowired
     private UserRepository userRepository;
     @Autowired
