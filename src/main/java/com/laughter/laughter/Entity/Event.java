@@ -52,6 +52,16 @@ public class Event {
     @Column(name = "Updated_On", nullable = false)
     private LocalDateTime updatedOn;
 
+     public Event(User user, String name, LocalTime startTime, LocalTime endTime, LocalDate date, String location,
+            Status status) {
+        this.user = user;
+        this.name = name;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.date = date;
+        this.location = location;
+        this.status = status;
+    }
 
      @PrePersist
     protected void onCreate() {
