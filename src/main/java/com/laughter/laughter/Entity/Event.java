@@ -26,15 +26,15 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="Event")
+@Table(name="event")
 public class Event {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
-    @JoinColumn(name="user")
+    @JoinColumn(name="User")
     private User user;
-    @Column(name="Event_name")
+    @Column(name="Event_Name")
     private String name;
     @Column(name = "Start_Time", nullable = false)
     private LocalTime startTime;
