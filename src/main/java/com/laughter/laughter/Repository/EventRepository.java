@@ -3,6 +3,7 @@ package com.laughter.laughter.Repository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,5 +30,19 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                         @Param("date") LocalDate date,
                         @Param("startTime") LocalTime startTime,
                         @Param("endTime") LocalTime endTime);
+
+        // @Query("SELECT COUNT(e) FROM Event e WHERE e.user.Id=userId AND
+        // e.date=CURRENT_DATE AND e.Status=:status")
+        // Long countByUserAndStatus(@Param("userId") Long userId, @Param("status")
+        // Status status);
+
+        @Query("SELECT COUNT(e) FROM Event e WHERE e.user.id = :userId AND e.date = CURRENT_DATE AND :now BETWEEN e.startTime AND e.endTime")
+        Long countOngoingEvents(@Param("userId") Long userId, @Param("now") LocalTime now);
+
+        @Query("SELECT COUNT(e) FROM Event e WHERE e.user.id = :userId AND e.date = CURRENT_DATE AND e.endTime < :now")
+        Long countAccomplishedEvents(@Param("userId") Long userId, @Param("now") LocalTime now);
+
+        @Query("SELECT COUNT(e) FROM Event e WHERE e.user.id = :userId AND e.date = CURRENT_DATE AND e.startTime > :now")
+        Long countUpcomingEvents(@Param("userId") Long userId, @Param("now") LocalTime now);
 
 }
