@@ -9,6 +9,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.laughter.laughter.Component.WebSocketSessionRegistry;
 import com.laughter.laughter.DTO.EventStatsDTO;
 import com.laughter.laughter.Entity.Event;
@@ -50,22 +52,22 @@ public class EventStatusUpdater {
         }
     }
 
+    @Transactional
     @Scheduled(fixedRate=60000)
-    public void pushUserStats(){
+    public void pushUserStats() throws JsonProcessingException{
         @SuppressWarnings("unused")
         LocalDate today=LocalDate.now();
         LocalTime now=LocalTime.now();
-
         for(String email :sessionRegistry.getConnectedUserEmails()){
             User user =userRepository.findByEmail(email).orElseThrow();
             Long userId=user.getId();
-
             long accomplished=eventRepository.countAccomplishedEvents(userId, now);
             long ongoing=eventRepository.countOngoingEvents(userId, now);
             long upcoming =eventRepository.countUpcomingEvents(userId, now);
-
             EventStatsDTO stats = new EventStatsDTO(accomplished,ongoing,upcoming);
-            messagingTemplate.convertAndSendToUser(email, "/topic/event-stats", stats);
+            System.out.println("Sending to "+user.getEmail() +" the number is "+new ObjectMapper().writeValueAsString(stats));
+            messagingTemplate.convertAndSendToUser(
+                user.getEmail(),"/topic/event-stats", stats);
         }
 
     }

@@ -5,9 +5,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import com.laughter.laughter.Security.JwtUtil;
 
+@Component
 public class WebSocketEventListener implements  ApplicationListener<SessionConnectEvent> {
     @Autowired
     private WebSocketSessionRegistry sessionRegistry;

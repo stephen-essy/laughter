@@ -1,40 +1,43 @@
 package com.laughter.laughter.Component;
 
-import java.util.Collections;
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import com.laughter.laughter.Repository.UserRepository;
 import com.laughter.laughter.Security.JwtUtil;
-
-
-import com.laughter.laughter.Entity.User;
+import com.laughter.laughter.Service.UserDetailsServiceImplementation;
 
 @Component
-public class WebSocketAuthInterceptor  implements ChannelInterceptor {
+public class WebSocketAuthInterceptor implements ChannelInterceptor {
     @Autowired
     private JwtUtil jwtUtil;
-
     @Autowired
-    private UserRepository userRepository;
+    private UserDetailsServiceImplementation userDetailsService;
 
     @Override
-    public Message<?> preSend(Message<?> message ,MessageChannel channel){
+    public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
-        List <String> authHeaders =accessor.getNativeHeader("Authorization");
-        if(authHeaders !=null && !authHeaders.isEmpty()){
-            String token = authHeaders.get(0).replace("Bearer ","");
-            String email=jwtUtil.extractEmail(token);
-            
-            User user = userRepository.findByEmail(email).orElseThrow();
-            accessor.setUser(new UsernamePasswordAuthenticationToken(user,null,Collections.emptyList()));
+        if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+            List<String> authHeaders = accessor.getNativeHeader("Authorization");
+            if (authHeaders != null && !authHeaders.isEmpty()) {
+                String token = authHeaders.get(0).replace("Bearer ", "");
+                String email = jwtUtil.extractEmail(token);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+                if (email != null && jwtUtil.validateToken(token, userDetails)) {
+                    Principal principal = () -> email;
+                    accessor.setUser(principal);
+                    System.out.println("Websocket connect authenticated for :"+email);
+                }
+            }
         }
         return message;
     }
