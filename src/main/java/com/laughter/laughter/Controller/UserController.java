@@ -20,8 +20,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.laughter.laughter.DTO.ProfileDTO;
 import com.laughter.laughter.DTO.UserDTO;
+import com.laughter.laughter.Entity.Profile;
 import com.laughter.laughter.Entity.User;
+import com.laughter.laughter.Repository.ProfileRepository;
 import com.laughter.laughter.Repository.UserRepository;
 import com.laughter.laughter.Responses.ApiResponse;
 import com.laughter.laughter.Responses.AuthResponse;
@@ -38,13 +41,16 @@ import lombok.Setter;
 
 @RestController
 @RequestMapping("laughter/user")
-@CrossOrigin(origins = "http://172.16.17.113:5500/", maxAge = 3600)
+@CrossOrigin(origins = "http://127.0.0.1:5500/", maxAge = 3600)
+
 @Getter
 @Setter
 @RequiredArgsConstructor
 public class UserController {
     
     private final BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private ProfileRepository profileRepository;
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -126,11 +132,22 @@ public class UserController {
                 // Jwt implementation to provide token and send to fontend
                 UserDetails userDetails = userDetailsImplementation.loadUserByUsername(userDTO.getEmail());
                 String token = jwtUtils.generateToken(userDetails);
+                Optional <Profile>  profileOptional=profileRepository.findByUser(user);
+                ProfileDTO profileDTO =profileOptional.map(profile -> new ProfileDTO(
+                    profile.getGender(),
+                    profile.getPhoneNumber(),
+                    profile.getUniversity(),
+                    profile.getCorse()
+                )).orElse(null);
+                System.out.println("The DTO sent is :"+profileDTO.getCorse());
+
                 return ResponseEntity.ok(new AuthResponse(
                         true,
                         "Successful Authenticated !",
                         token,
-                        user.getName()));
+                        user.getName(),
+                        profileDTO
+                        ));
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                         new AuthResponse(

@@ -32,7 +32,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
     http
         .cors(cors -> cors.configurationSource(request -> {
             var config = new org.springframework.web.cors.CorsConfiguration();
-            config.setAllowedOriginPatterns(List.of("http://127.0.0.1:5500", "http://192.168.88.246:5500","http://172.16.17.113:5500/"));
+            config.setAllowedOriginPatterns(List.of("http://127.0.0.1:5500", "http://192.168.88.246:5500","http://172.16.17.113:5500","http://192.168.159.1:5500"));
             config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
             config.setAllowedHeaders(List.of("*"));
             config.setAllowCredentials(true);

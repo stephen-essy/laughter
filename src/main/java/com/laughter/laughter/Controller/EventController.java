@@ -33,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("laughter/event")
-@CrossOrigin(origins = "http://172.16.17.113:5500/", maxAge = 3600)
+@CrossOrigin(origins = "http://127.0.0.1:5500/", maxAge = 3600)
 @RequiredArgsConstructor
 public class EventController {
   @Autowired
@@ -109,5 +109,4 @@ public class EventController {
     EventStatsDTO stats = new EventStatsDTO(accomplished, ongoing, upcoming);
     return ResponseEntity.ok(stats);
   }
-
 }

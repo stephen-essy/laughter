@@ -1,5 +1,7 @@
 package com.laughter.laughter.Responses;
 
+import com.laughter.laughter.DTO.ProfileDTO;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +18,7 @@ public class AuthResponse {
    private String userName;
    private Long userId;
    private Object data;
+   private ProfileDTO profile;
 
    public AuthResponse(boolean status, String message) {
       this.status = status;
@@ -42,5 +45,13 @@ public class AuthResponse {
       this.token = token;
       this.userName = userName;
    }
+
+   public AuthResponse(boolean status, String message, String token, String userName, ProfileDTO profile) {
+      this.status = status;
+      this.message = message;
+      this.token = token;
+      this.userName = userName;
+      this.profile = profile;
+   } 
 
 }

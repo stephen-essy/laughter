@@ -47,7 +47,7 @@ public class EventStatusUpdater {
                 event.setStatus(newStatus);
                 eventRepository.save(event);
                 System.out.println("Updated event: " + event.getName() + " → " + newStatus);
-                messagingTemplate.convertAndSend("/topic/event-status", event);
+                messagingTemplate.convertAndSend("/topic/event-status", "hello from this side !");
             }
         }
     }
@@ -76,6 +76,7 @@ public class EventStatusUpdater {
     private Status determineStatus(Event event, LocalTime now) {
         if (now.isBefore(event.getStartTime()))
             return Status.UPCOMING;
+            
         if (now.isAfter(event.getEndTime()))
             return Status.ACCOMPLISHED;
         return Status.ONGOING;
