@@ -42,6 +42,11 @@ public class ProfileController {
         }
 
         User userFound =user.get();
+        Optional <Profile> presentUserProfile= profileRespository.findByUser(userFound);
+        if(!presentUserProfile.isEmpty()){
+            System.out.println("Profile present already !");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false,"Profile Already added !",null));
+        }
         Profile profile = new Profile(
             userFound,
             profileDTO.getGender(),
