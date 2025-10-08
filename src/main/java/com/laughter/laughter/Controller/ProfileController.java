@@ -22,6 +22,7 @@ import com.laughter.laughter.Responses.ApiResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("laughter/profile")
 @CrossOrigin(origins = "http://127.0.0.1:5500/", maxAge = 3600)
@@ -34,28 +35,30 @@ public class ProfileController {
     private ProfileRepository profileRespository;
 
     @PostMapping("/add")
-    public ResponseEntity<ApiResponse> createProfile(@Valid @RequestBody ProfileDTO profileDTO,@AuthenticationPrincipal UserDetails userDetails){
-        String email=userDetails.getUsername();
-        Optional<User> user=userRepository.findByEmail(email);
-        if(user.isEmpty()){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false,"Unauthorized Access",null));
+    public ResponseEntity<ApiResponse> createProfile(@Valid @RequestBody ProfileDTO profileDTO,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        String email = userDetails.getUsername();
+        Optional<User> user = userRepository.findByEmail(email);
+        if (user.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse(false, "Unauthorized Access", null));
         }
 
-        User userFound =user.get();
-        Optional <Profile> presentUserProfile= profileRespository.findByUser(userFound);
-        if(!presentUserProfile.isEmpty()){
+        User userFound = user.get();
+        Optional<Profile> presentUserProfile = profileRespository.findByUser(userFound);
+        if (presentUserProfile.isPresent()) {
             System.out.println("Profile present already !");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false,"Profile Already added !",null));
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ApiResponse(false, "Profile Already added !", null));
         }
         Profile profile = new Profile(
-            userFound,
-            profileDTO.getGender(),
-            profileDTO.getPhoneNumber(),
-            profileDTO.getUniversity(),
-            profileDTO.getCorse()
-        );   
+                userFound,
+                profileDTO.getGender(),
+                profileDTO.getPhoneNumber(),
+                profileDTO.getUniversity(),
+                profileDTO.getCorse());
         profileRespository.save(profile);
-        return ResponseEntity.ok(new ApiResponse(true,"Profile added successful",null));
+        return ResponseEntity.ok(new ApiResponse(true, "Profile added successful", null));
     }
 
 }
