@@ -8,5 +8,5 @@ import com.laughter.laughter.Entity.User;
 
 
 public interface ProfileRepository extends JpaRepository<Profile, Long>{
-    Optional <Profile> findByUser(User user);
+    Optional <Profile> findByUser(User user); 
 }
