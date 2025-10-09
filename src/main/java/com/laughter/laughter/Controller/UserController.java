@@ -139,7 +139,7 @@ public class UserController {
                     profile.getUniversity(),
                     profile.getCorse()
                 )).orElse(null);
-                System.out.println("The DTO sent is :"+profileDTO.getCorse());
+                // System.out.println("The DTO sent is :"+profileDTO.getCorse());
 
                 return ResponseEntity.ok(new AuthResponse(
                         true,
