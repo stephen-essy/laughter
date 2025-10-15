@@ -63,13 +63,16 @@ public class EventController {
         LocalTime eventTime = conflictEvents.get(0).getStartTime();
         LocalTime suggestedTime = eventTime.plusMinutes(15);
         return ResponseEntity.badRequest()
-            .body(new ApiResponse(false, "You have an Event at this slot ,you can plan out at " + suggestedTime, null));
+            .body(new ApiResponse(false, "events conflict,you can plan out at " + suggestedTime, null));
       }
-      List<Event> matchingEvents = eventRepository.findExactDuplicateActivities(userID, eventDTO.getStartTime(),
+      List<Event> matchingEvents = eventRepository.findExactDuplicateActivities(
+        userID, 
+        eventDTO.getDate(),
+      eventDTO.getStartTime(),
           eventDTO.getEndTime());
       if (!matchingEvents.isEmpty()) {
         return ResponseEntity.badRequest()
-            .body(new ApiResponse(false, "time slot occupied", null));
+            .body(new ApiResponse(false, "Event duplicate at this time", null));
       }
 
       List<Event> overlappingEvents = eventRepository.findOverlappingEvents(userID, eventDTO.getDate(),
