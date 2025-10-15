@@ -11,9 +11,22 @@ import org.springframework.data.repository.query.Param;
 import com.laughter.laughter.Entity.Event;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
-        @Query("SELECT a FROM Event a WHERE a.user.Id=:user AND (a.startTime < :expectedEndTime AND a.endTime >:expectedEndTime OR a.startTime = :expectedEndTime) ORDER BY a.endTime DESC")
-        List<Event> findConflictingActivities(@Param("user") Long userId,
-                        @Param("expectedEndTime") LocalTime expectedEndTime);
+       @Query("""
+    SELECT a FROM Event a 
+    WHERE a.user.id = :user 
+      AND FUNCTION('DATE', a.startTime) = :targetDate
+      AND (
+        (a.startTime < :expectedEndTime AND a.endTime > :expectedEndTime)
+        OR a.startTime = :expectedEndTime
+      )
+    ORDER BY a.endTime DESC
+""")
+List<Event> findConflictingActivitiesOnDate(
+    @Param("user") Long userId,
+    @Param("targetDate") LocalDate targetDate,
+    @Param("expectedEndTime") LocalTime expectedEndTime
+);
+
 
         @Query("SELECT a FROM Event a WHERE a.user.Id=:user AND a.startTime = :startTime AND a.endTime=:endTime")
         List<Event> findExactDuplicateActivities(@Param("user") Long userId, @Param("startTime") LocalTime startTime,
@@ -31,10 +44,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                         @Param("startTime") LocalTime startTime,
                         @Param("endTime") LocalTime endTime);
 
-        // @Query("SELECT COUNT(e) FROM Event e WHERE e.user.Id=userId AND
-        // e.date=CURRENT_DATE AND e.Status=:status")
-        // Long countByUserAndStatus(@Param("userId") Long userId, @Param("status")
-        // Status status);
 
         @Query("SELECT COUNT(e) FROM Event e WHERE e.user.id = :userId AND e.date = CURRENT_DATE AND :now BETWEEN e.startTime AND e.endTime")
         Long countOngoingEvents(@Param("userId") Long userId, @Param("now") LocalTime now);
