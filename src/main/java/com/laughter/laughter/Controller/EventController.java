@@ -1,5 +1,6 @@
 package com.laughter.laughter.Controller;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -56,7 +57,10 @@ public class EventController {
       }
       User userFound = user.get();
       Long userID = userFound.getId();
-      List<Event> conflictEvents = eventRepository.findConflictingActivities(userID, eventDTO.getEndTime());
+      LocalDate today= LocalDate.now();
+      List<Event> conflictEvents = eventRepository.findConflictingActivitiesOnDate(userID, today, eventDTO.getEndTime());
+
+
       if (!conflictEvents.isEmpty()) {
         LocalTime eventTime = conflictEvents.get(0).getStartTime();
         LocalTime suggestedTime = eventTime.plusMinutes(15);
