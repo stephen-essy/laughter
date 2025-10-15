@@ -59,8 +59,6 @@ public class EventController {
       Long userID = userFound.getId();
       LocalDate today= LocalDate.now();
       List<Event> conflictEvents = eventRepository.findConflictingActivitiesOnDate(userID, today, eventDTO.getEndTime());
-
-
       if (!conflictEvents.isEmpty()) {
         LocalTime eventTime = conflictEvents.get(0).getStartTime();
         LocalTime suggestedTime = eventTime.plusMinutes(15);

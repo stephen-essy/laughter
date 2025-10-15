@@ -28,7 +28,7 @@ List<Event> findConflictingActivitiesOnDate(
 );
 
 
-        @Query("SELECT a FROM Event a WHERE a.user.Id=:user AND a.startTime = :startTime AND a.endTime=:endTime")
+        @Query("SELECT a FROM Event a WHERE a.user.Id=:user AND a.date=CURRENT_DATE AND a.startTime = :startTime AND a.endTime=:endTime")
         List<Event> findExactDuplicateActivities(@Param("user") Long userId, @Param("startTime") LocalTime startTime,
                         @Param("endTime") LocalTime endTime);
 
